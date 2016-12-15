@@ -1,0 +1,15 @@
+<h1>Profile Page</h1>
+
+<h1>{{ user._id }}</h1>
+<img src="{{ profile.avatar_url }}" alt="" />
+
+
+<form ng-submit="addTweet(newTweet)">
+  <textarea ng-model="newTweet" value="{{newTweet}}" name="newtweet" rows="10" cols="60" placeholder="Let's tweet something!"></textarea>
+  <input type="submit" name="" value="Tweet">
+</form>
+
+
+<ul ng-repeat="tweet in tweets">
+  <li>{{tweet}}</li>
+</ul>
