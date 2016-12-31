@@ -8,6 +8,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 //initializing the app
 const app = express();
+// bcrypt module
+const bcrypt = require('bcrypt');
+// Number of Salt Rounds
+const saltRounds = 12;
+// Generate rand-token
+const uid = require('rand-token').uid;
+
+var tokenobj = {};
 
 //assign bluebird to promise
 const Promise = bluebird;
@@ -26,6 +34,8 @@ app.use(express.static('static'));
 const user = mongoose.model('user', {
   _id : String,
   password : String,
+  token : String,
+  token_added_on : Date,
   following : [{type:String, unique: true}],
   followers : [{type:String, unique: true}]
 });
@@ -34,7 +44,8 @@ const user = mongoose.model('user', {
 const tweet = mongoose.model('tweet', {
   text : String,
   timestamp : Date,
-  username : String
+  username : String,
+  likes_counter : Number
 });
 
 
@@ -50,11 +61,46 @@ app.get('/worldtimeline',function(req,res){
   });
 });
 
+app.post('/login',function(req,res){
+  let token = uid(16);
+  let id = req.body.username;
+  let pwd = req.body.password;
+  user.findById(id)
+  .then(function(data){
+    return bcrypt.compare(pwd,data.password);
+  })
+  .then(function(match){
+    if(match){
+      return user.update(
+          { _id: id },
+          { $set: { token : token , token_added_on : new Date()} }
+        )};
+      })
+  .then(function(auth_token){
+    res.send(token);
+  })
+  .catch(function(err){
+    res.send("Error"+err.stash);
+  });
+});
+
+function authCheck(req,res,next){
+  let token = req.query.auth_token;
+  user.find({token : token}).then(function(data){
+    if(data){
+      console.log("Logged in");
+      next();
+    }
+    else{
+      res.send("Please log in");
+    }
+  });
+}
 ///------------------ Timeline Tweets:
 
-app.get('/timeline/:username',function(req,res){
+app.get('/timeline/:username',authCheck,function(req,res){
   let tweets = [];
-  user.findById(req.params.username)
+  user.findById(req.params.username).limit(20)
   .then(function(usr){
     return tweet.find({
       username : {
@@ -66,7 +112,24 @@ app.get('/timeline/:username',function(req,res){
   });
 });
 
-app.get('/profile/:username',function(req,res){
+app.post('/likes',authCheck,function(req,res){
+  let id = req.body.id;
+  return tweet.update(
+      { _id: id },
+      { $inc: { likes_counter : 1} }
+    )
+.then(function(res){
+  res.send(id);
+})
+.catch(function(error){
+  // if(error){
+  //   console.log(error.stash);
+  // }
+});
+
+});
+
+app.get('/profile/:username',authCheck,function(req,res){
   let mytweets = [];
   Promise.all([tweet.find({username : req.params.username}).limit(20),
   user.findOne({_id : req.params.username})
@@ -79,17 +142,34 @@ app.get('/profile/:username',function(req,res){
   });
 });
 
-
-app.post('/profile/:username',function(req,res){
+app.post('/profile/:username',authCheck,function(req,res){
   let twt = new tweet();
-  twt.text = req.body.text;
+  twt.text = req.body.twt;
   twt.timestamp = new Date();
   twt.username = req.params.username;
   twt.save().then(function(){
-    console.log("Post Successful")
-    res.json(twt);
+  console.log("Post Successful");
+  res.json(twt);
   });
 });
+
+app.post('/signup',function(req,res){
+  let usr = new user();
+  bcrypt.hash(req.body.password,saltRounds).then(function(hash){
+    usr.password = hash;
+    console.log("hash"+hash);
+    }).then(function(){
+      usr._id = req.body.username;
+      console.log(usr.password);
+      usr.followers = [];
+      usr.following = [];
+      usr.save().then(function(){
+        console.log("Signup Successful");
+        res.json(usr);
+    });
+  });
+});
+
 
 // world tweet
 

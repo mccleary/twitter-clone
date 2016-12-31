@@ -1,8 +1,28 @@
-<h1>This is my timeline</h1>
+<!-- <h1>This is my timeline</h1> -->
 
 
-<ul ng-repeat="tweet in tweets">
+<!-- <ul ng-repeat="tweet in tweets">
   <li>{{tweet}}</li>
 </ul>
 <img src="{{ user.avatar_url }}" alt="" />
-<h2>{{ user._id }}</h2>
+<h2>{{ user._id }}</h2> -->
+
+
+<!-- <ul ng-repeat="tweet in tweets">
+  <li>{{tweet.text}} <br> {{tweet.username}} {{tweet.timestamp | date : 'MMM, d'}}</li>
+</ul> -->
+
+<div class="container-fluid">
+ <div class="col-sm-offset-4 col-sm-4 col-md-offset-4 col-md-4 col-lg-offset-4 col-lg-4 col-xl-offset-4 col-xl-4">
+   <ul class="tweet" ng-repeat="tweet in tweets | orderBy : '-timestamp'">
+     <li class="text-center"><span>{{tweet.text}}</span><br>
+       <div class="userdate" style="text-align: right;">
+           {{tweet.username}} - {{tweet.timestamp | date : 'MMM, d'}}
+           <div class="col-sm-3" style="text-align: left;">
+           <button class="heart" ng-click="likes(tweet._id)"><i class="fa fa-heart"></i></button><span style= "font-size : .75em;">{{tweet.likes_counter}}</span>
+           </div>
+       </div>
+     </li>
+   </ul><br>
+ </div>
+</div>

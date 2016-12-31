@@ -1,0 +1,18 @@
+<div class="container center">
+  <div class="form-inline col-offset-sm-2 col-offset-md-2 col-offset-lg-2 col-offset-xl-2 col-sm-8 col-md-8 col-lg-8 col-xl-8">
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputEmail3">username</label>
+      <input ng-model="uname" class="form-control" placeholder="Enter username">
+    </div>
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputPassword3">password</label>
+      <input type="password" ng-model="password" class="form-control"  placeholder="Password" ng-required/>
+    </div>
+    <div class="form-group">
+      <label class="sr-only" for="exampleInputPassword3">password</label>
+      <input type="password" ng-model="password_again" class="form-control" placeholder="Confirm Password" ng-required/>
+    </div>
+    <button ng-click="signuppost()" class="btn btn-primary">Sign Up</button>
+    <button ui-sref="worldtimeline" name="button">login</button>
+  </div>
+</div>
